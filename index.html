@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>VR:</title>
+  <meta name="description" content="DNA VR">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+ <script src="https://rawgit.com/ngokevin/aframe-event-set-component/master/dist/aframe-event-set-component.min.js"></script>
+  <script src="https://rawgit.com/ngokevin/aframe-animation-component/master/dist/aframe-animation-component.min.js"></script>
+  
+</head>
+<body>
+
+    <a-scene>
+    
+    <a-entity id="rig" position="0 1.6 1">
+    <a-entity camera look-controls wasd-controls>
+      <a-entity
+  animation__click="property: scale; startEvents: click; easing: easeInCubic; dur: 150; from: 0.1 0.1 0.1; to: 1 1 1"
+  animation__fusing="property: scale; startEvents: fusing; easing: easeInCubic; dur: 1000; from: 1 1 1; to: 0.1 0.1 0.1"
+  animation__mouseleave="property: scale; startEvents: mouseleave; easing: easeInCubic; dur: 500; to: 1 1 1"
+  cursor="fuse: true;"
+  raycaster="far: 1000; near: 0; interval: 1000; objects: .moveTarget, .rotateTarget" 
+  material="color: black; shader: flat" 
+  position="0 0 -3" 
+  geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.08;"></a-entity>
+    </a-entity>
+  </a-entity>
+
+  <a-assets>
+    <a-asset-item id="dna-model" src="models/dna.glb" crossOrigin="anonymous"></a-asset-item> 
+  </a-assets>
+
+  <!-- Basic plane. -->
+  <a-plane id="floor" color="#0F0" height="50" width="50" rotation="-90 0 0"></a-plane>
+  <!-- Basic cylinder. -->
+<a-cylinder color="crimson" height="3" radius=".5" rotation="0 0 0" position="3 0 -5" scale="1 0.02 1" class='moveTarget'></a-cylinder>
+<!-- Basic cylinder. -->
+<a-cylinder color="crimson" height="3" radius=".5" rotation="0 0 0" position="-3 0 -5" scale="1 0.02 1" class='moveTarget'></a-cylinder>
+<!-- Basic cylinder. -->
+<a-cylinder color="crimson" height="3" radius=".5" rotation="0 0 0" position="-3 0 0" scale="1 0.02 1" class='moveTarget'></a-cylinder>
+<!-- Basic cylinder. -->
+<a-cylinder color="crimson" height="3" radius=".5" rotation="0 0 0" position="3 0 0" scale="1 0.02 1" class='moveTarget'></a-cylinder>
+<!-- Basic cylinder. -->
+<a-cylinder color="crimson" height="3" radius=".5" rotation="0 0 0" position="0 0 1" scale="1 0.02 1" class='moveTarget'></a-cylinder>
+
+  <a-gltf-model src="#dna-model" position="0 -1 -2" rotation="0 -30 20" scale="0.003 0.003 0.003" class="rotateTarget"
+  event-set__1="_event: click;"
+  animation__rotate="property: rotation; dir: forward; dur: 8000;
+                                 easing: easeInSine; loop: false; from: 0 -30 0; to: 0 330 0;
+                                 startEvents:click">
+                                 </a-gltf-model>
+  
+  <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="-0.5 1 1"></a-entity>
+  <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="2 0 1"></a-entity>
+
+  <!-- Dim ambient lighting. -->
+<a-light type="ambient" color="#fff"></a-light>
+
+</a-scene>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js" crossorigin="anonymous"></script>
+
+  <script>
+    
+    // A $( document ).ready() block.
+    $( document ).ready(function() {
+
+      let sound = new Howl({
+        src: ['../sound/sound1.mp3']
+      });
+
+      function objToPos(posObject) {
+        let y=posObject.y+1.6;
+        return posObject.x + " " + y + " " + posObject.z;
+      }
+      document.querySelector('a-scene').addEventListener('enter-vr', function () {
+         console.log("ENTERED VR");
+         sound.play();
+      });
+      document.querySelector('a-scene').addEventListener('exit-vr', function () {
+         console.log("ENTERED VR");
+         sound.stop();
+      });
+
+    function clickhandler(targetPos) {
+     
+      
+      let cameraRig = document.querySelector('#rig');
+      //let camera1 = document.querySelector('#camera1');
+
+      //let targetPos = objToPos( target.getAttribute('position') );//floor
+
+      let camPos = objToPos( cameraRig.getAttribute('position') );
+      //let camRot = objToPos( cameraRig.getAttribute('rotation') );
+      //alert(camPos+" "+targetPos);
+      cameraRig.setAttribute('position', targetPos); //move camera
+      //let targetP = "0 0 0";
+      //camera1.setAttribute('animation', 'property: rotation; from: ${camRot}; to: ${targetP}; dur: 700;');
+      
+    }
+
+    function registerHandlerForClick(target){
+      target.addEventListener('click', function(e) {
+        //alert('click on floor');
+        //alert(e.detail.intersection.point);
+        /*for (i in e.detail.intersection.point) {
+          console.log(i + " " + e.detail.intersection.point[i]);
+        }
+        */
+        let targetPos = objToPos(e.detail.intersection.point);//floor
+        //alert(targetPos);
+        clickhandler(targetPos);
+      });
+    }
+    function setupHandlers() {
+      //alert('handlersetup');
+      
+      let myTargetList = document.querySelectorAll('.moveTarget');
+      let index = 0;
+      while (index < myTargetList.length){
+        registerHandlerForClick(myTargetList[index]);
+        index = index+1;
+      }
+      //registerHandlerForClick(myTarget);
+    }
+
+    setupHandlers();
+    //pre1.addEventListener('click', (event) => {
+    
+      
+
+  });
+
+    
+</script>
+
+</body>
+</html>
